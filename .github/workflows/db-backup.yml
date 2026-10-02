@@ -18,7 +18,7 @@ jobs:
         env:
           DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: pg_dump "$DB_URL" --format=custom --no-owner --no-privileges --file=klettzap.dump
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: klettzap-db-${{ github.run_number }}
           path: klettzap.dump
