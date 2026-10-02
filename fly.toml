@@ -1,0 +1,31 @@
+# Fly.io — KlettZap em São Paulo, 2 máquinas sempre ligadas (uma assume se a outra cair).
+# Segredos de servidor NÃO ficam aqui: `fly secrets import < .env.local` (ver scripts/deploy-fly.sh).
+app = "seu-app"
+primary_region = "gru"
+
+[build]
+  # NEXT_PUBLIC_* entram no bundle do navegador na hora do build (são públicos por natureza).
+  [build.args]
+    NEXT_PUBLIC_SUPABASE_URL = "https://SEU-PROJETO.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY = "SUA_CHAVE_PUBLICA_SUPABASE"
+    NEXT_PUBLIC_SITE_URL = "https://SEU-APP.fly.dev"
+    NEXT_PUBLIC_APP_LOCALE = "pt"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # Webhook da Meta precisa do app sempre no ar: nada de desligar por ociosidade.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 2
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/login"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

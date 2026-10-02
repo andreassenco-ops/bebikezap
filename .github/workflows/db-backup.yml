@@ -1,0 +1,25 @@
+# Backup diário do banco (o plano grátis do Supabase não tem backup).
+# Guarda o dump como artefato do GitHub por 30 dias.
+# Segredo necessário no repositório: SUPABASE_DB_URL = string "Session pooler"
+# do Supabase (Settings → Database → Connection string), com a senha do banco.
+# O host direto db.<ref>.supabase.co é só IPv6 e não funciona nos runners do GitHub.
+name: Backup diário do banco
+on:
+  schedule:
+    - cron: "0 6 * * *" # 03:00 em Brasília
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    container: postgres:17
+    steps:
+      - name: pg_dump
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: pg_dump "$DB_URL" --format=custom --no-owner --no-privileges --file=klettzap.dump
+      - uses: actions/upload-artifact@v4
+        with:
+          name: klettzap-db-${{ github.run_number }}
+          path: klettzap.dump
+          retention-days: 30
